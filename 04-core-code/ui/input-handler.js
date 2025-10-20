@@ -16,11 +16,10 @@ export class InputHandler {
         this._setupNumericKeyboard();
         this._setupTableInteraction();
         this._setupFunctionKeys();
-        this._setupPanelToggles(); // [MODIFIED] Consolidated panel toggle logic here
+        this._setupPanelToggles();
         this._setupFileLoader();
         this._setupPhysicalKeyboard();
         
-        // The left panel's internal listeners are still initialized here
         this.leftPanelHandler.initialize();
     }
 
@@ -86,11 +85,7 @@ export class InputHandler {
         });
     }
     
-    /**
-     * [NEW] Centralized method to handle all panel toggle buttons.
-     */
     _setupPanelToggles() {
-        // Numeric Keyboard Toggle
         const numericToggle = document.getElementById(DOM_IDS.PANEL_TOGGLE);
         if (numericToggle) {
             numericToggle.addEventListener('click', () => {
@@ -98,17 +93,14 @@ export class InputHandler {
             });
         }
 
-        // Left Panel Toggle
         const leftPanelToggle = document.getElementById(DOM_IDS.LEFT_PANEL_TOGGLE);
         if (leftPanelToggle) {
             leftPanelToggle.addEventListener('click', () => {
-                // [TRACK] Check if the click event is being captured
-                console.log('[TRACK] InputHandler: Left panel toggle clicked.');
-                this.eventAggregator.publish(EVENTS.USER_TOGGLED_LEFT_PANEL);
+                // [FIX] Restore original logic: This action should trigger a full view-state change, not just a simple toggle.
+                this.eventAggregator.publish(EVENTS.USER_NAVIGATED_TO_DETAIL_VIEW);
             });
         }
 
-        // Right Panel Toggle
         const rightPanelToggle = document.getElementById(DOM_IDS.FUNCTION_PANEL_TOGGLE);
         if (rightPanelToggle) {
             rightPanelToggle.addEventListener('click', () => {

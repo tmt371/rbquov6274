@@ -11,13 +11,16 @@
 }
 #left-panel {
     position: fixed;
-    top: 0; /* [NEW] Ensure it's aligned to the top */
+    top: 0;
     left: 0;
-    width: 290px; /* [FIX] Added width to make the panel visible */
-    height: 100%; /* [NEW] Ensure it takes the full height */
+    width: 290px;
+    /* [FIX] Set height relative to the main app container, not the viewport. */
+    /* This calculation assumes the app-container might have margins, etc. */
+    /* It will occupy the full height MINUS the space for the keyboard panel. */
+    height: calc(100% - 190px); /* Adjust 190px based on final keyboard height */
+    max-height: calc(100vh - 190px); /* Ensure it doesn't overflow viewport */
     background-color: var(--k1-bg-color);
-    border: 1px solid var(--panel-border-color);
-    border-left: none;
+    border-right: 1px solid var(--panel-border-color);
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     z-index: 100;
     transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
@@ -31,10 +34,8 @@
     transform: translateX(0);
 }
 
-/* [FINAL REVISION] Handle is now permanently fixed at left:0 and positioned lower. */
 #left-panel-toggle {
     position: fixed;
-    /* Move down from vertical center by the handle's own height (80px) */
     top: calc(50% + 80px); 
     left: 0;
     transform: translateY(-50%);
@@ -56,18 +57,17 @@
     width: 20px;
     height: 20px;
     transition: opacity 0.3s ease-in-out;
-    position: absolute; /* Both arrows overlay each other */
+    position: absolute;
 }
 
 #left-panel-toggle .arrow-right {
-    opacity: 1; /* Visible by default */
+    opacity: 1;
 }
 
 #left-panel-toggle .arrow-left {
-    opacity: 0; /* Hidden by default */
+    opacity: 0;
 }
 
-/* When panel is open, flip the arrow's visibility */
 #left-panel.is-open ~ #left-panel-toggle .arrow-right {
     opacity: 0;
 }

@@ -15,10 +15,10 @@ export class LeftPanelComponent {
         }
 
         this.eventAggregator = eventAggregator;
-        this.detailConfigView = detailConfigView; // This is the manager for K1, K2, etc.
+        this.detailConfigView = detailConfigView;
 
         // --- DOM Element Caching ---
-        this.toggleButton = document.getElementById(DOM_IDS.LEFT_PANEL_TOGGLE); // [MODIFIED] Look for toggle globally
+        this.toggleButton = document.getElementById(DOM_IDS.LEFT_PANEL_TOGGLE);
         this.content = this.panelElement.querySelector('.panel-content');
         this.tabs = this.panelElement.querySelectorAll('.tab-button');
         this.tabContents = this.panelElement.querySelectorAll('.tab-content');
@@ -29,12 +29,19 @@ export class LeftPanelComponent {
     }
 
     _initializeEventListeners() {
-        // Event listeners are now centralized in the main InputHandler
+        // [FIX] Add back the event listener for the back button.
+        // This is crucial for returning to the main view.
+        if (this.backButton) {
+            this.backButton.addEventListener('click', () => {
+                this.eventAggregator.publish(EVENTS.USER_NAVIGATED_TO_QUICK_QUOTE_VIEW);
+                // The hide() call is handled by the render method upon state change.
+            });
+        }
     }
 
     toggle() {
-        // [TRACK] Check if the toggle method is being called
-        console.log('[TRACK] LeftPanelComponent: toggle() method called.');
+        // This method is kept for direct manipulation if ever needed,
+        // but is no longer the primary way to open the panel.
         this.panelElement.classList.toggle('is-open');
     }
 
@@ -49,6 +56,7 @@ export class LeftPanelComponent {
     render(state) {
         const { currentView, activeTabId } = state.ui;
 
+        // [MODIFIED] Logic is now driven by the application's central state.
         if (currentView === 'DETAIL_CONFIG') {
             this.show();
         } else {

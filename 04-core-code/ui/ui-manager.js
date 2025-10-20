@@ -54,12 +54,7 @@ export class UIManager {
 
         this.quotePreviewComponent = quotePreviewComponent;
 
-        // --- Centralized event subscriptions for panel toggling ---
-        this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_LEFT_PANEL, () => {
-            // [TRACK] Check if the UIManager receives the event
-            console.log('[TRACK] UIManager: Received USER_TOGGLED_LEFT_PANEL event.');
-            this.leftPanelComponent.toggle();
-        });
+        // --- [FIX] Removed the incorrect subscription. Panel toggling is now driven by the main render loop based on state. ---
         this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_RIGHT_PANEL, () => this.rightPanelComponent.toggle());
     }
 
