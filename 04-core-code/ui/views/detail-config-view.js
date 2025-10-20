@@ -1,7 +1,7 @@
 // File: 04-core-code/ui/views/detail-config-view.js
 
 /**
- * @fileoverview A "Manager" view that delegates logic to specific sub-views for each tab.
+ * @fileoverview A "Manager" view that delegates logic and rendering to specific sub-views for each tab.
  */
 
 export class DetailConfigView {
@@ -19,36 +19,43 @@ export class DetailConfigView {
         this.eventAggregator = eventAggregator;
 
         // Store instances of sub-views
-        this.k1View = k1LocationView;
-        this.k2View = k2FabricView;
-        this.k3View = k3OptionsView;
-        this.driveAccessoriesView = driveAccessoriesView;
-        this.dualChainView = dualChainView;
+        this.views = {
+            'k1-tab': k1LocationView,
+            'k2-tab': k2FabricView,
+            'k3-tab': k3OptionsView,
+            'k4-tab': driveAccessoriesView,
+            'k5-tab': dualChainView,
+        };
 
         console.log("DetailConfigView Refactored as a Manager View.");
+    }
+
+    /**
+     * [NEW] Renders the content for the currently active tab by delegating to the appropriate sub-view.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        const activeTabId = state.ui.activeTabId;
+        const activeView = this.views[activeTabId];
+
+        // Also manage which tab content is visible
+        const tabContents = document.querySelectorAll('#left-panel .tab-content');
+        tabContents.forEach(content => {
+            const contentTabId = content.id.replace('-content', '-tab');
+            content.classList.toggle('active', contentTabId === activeTabId);
+        });
+
+        if (activeView && typeof activeView.render === 'function') {
+            activeView.render(state);
+        }
     }
 
     activateTab(tabId) {
         this.stateService.dispatch({ type: 'ui/setActiveTab', payload: { tabId } });
 
-        switch (tabId) {
-            case 'k1-tab':
-                this.k1View.activate();
-                break;
-            case 'k2-tab':
-                this.k2View.activate();
-                break;
-            case 'k3-tab':
-                this.k3View.activate();
-                break;
-            case 'k4-tab':
-                this.driveAccessoriesView.activate();
-                break;
-            case 'k5-tab':
-                this.dualChainView.activate();
-                break;
-            default:
-                break;
+        const activeView = this.views[tabId];
+        if (activeView && typeof activeView.activate === 'function') {
+            activeView.activate();
         }
     }
 
@@ -56,65 +63,65 @@ export class DetailConfigView {
 
     handleFocusModeRequest({ column }) {
         if (column === 'location') {
-            this.k1View.handleFocusModeRequest();
+            this.views['k1-tab'].handleFocusModeRequest();
             return;
         }
         if (column === 'fabric') {
-            this.k2View.handleFocusModeRequest();
+            this.views['k2-tab'].handleFocusModeRequest();
             return;
         }
     }
 
     handleLocationInputEnter({ value }) {
-        this.k1View.handleLocationInputEnter({ value });
+        this.views['k1-tab'].handleLocationInputEnter({ value });
     }
 
     handlePanelInputBlur({ type, field, value }) {
-        this.k2View.handlePanelInputBlur({ type, field, value });
+        this.views['k2-tab'].handlePanelInputBlur({ type, field, value });
     }
 
     handlePanelInputEnter() {
-        this.k2View.handlePanelInputEnter();
+        this.views['k2-tab'].handlePanelInputEnter();
     }
 
     handleSequenceCellClick({ rowIndex }) {
         const { ui } = this.stateService.getState();
         const { activeEditMode } = ui;
         if (activeEditMode === 'K2_LF_SELECT' || activeEditMode === 'K2_LF_DELETE_SELECT') {
-            this.k2View.handleSequenceCellClick({ rowIndex });
+            this.views['k2-tab'].handleSequenceCellClick({ rowIndex });
         }
     }
 
     handleLFEditRequest() {
-        this.k2View.handleLFEditRequest();
+        this.views['k2-tab'].handleLFEditRequest();
     }
 
     handleLFDeleteRequest() {
-        this.k2View.handleLFDeleteRequest();
+        this.views['k2-tab'].handleLFDeleteRequest();
     }
 
     handleToggleK3EditMode() {
-        this.k3View.handleToggleK3EditMode();
+        this.views['k3-tab'].handleToggleK3EditMode();
     }
 
     handleBatchCycle({ column }) {
-        this.k3View.handleBatchCycle({ column });
+        this.views['k3-tab'].handleBatchCycle({ column });
     }
 
     handleDualChainModeChange({ mode }) {
-        this.dualChainView.handleModeChange({ mode });
+        this.views['k5-tab'].handleModeChange({ mode });
     }
 
     handleChainEnterPressed({ value }) {
-        this.dualChainView.handleChainEnterPressed({ value });
+        this.views['k5-tab'].handleChainEnterPressed({ value });
     }
 
     handleDriveModeChange({ mode }) {
-        this.driveAccessoriesView.handleModeChange({ mode });
+        this.views['k4-tab'].handleModeChange({ mode });
     }
 
     handleAccessoryCounterChange({ accessory, direction }) {
-        this.driveAccessoriesView.handleCounterChange({ accessory, direction });
+        this.views['k4-tab'].handleCounterChange({ accessory, direction });
     }
 
     handleTableCellClick({ rowIndex, column }) {
@@ -122,22 +129,22 @@ export class DetailConfigView {
         const { activeEditMode, dualChainMode, driveAccessoryMode } = ui;
 
         if (driveAccessoryMode) {
-            this.driveAccessoriesView.handleTableCellClick({ rowIndex, column });
+            this.views['k4-tab'].handleTableCellClick({ rowIndex, column });
             return;
         }
 
         if (activeEditMode === 'K1') {
-            this.k1View.handleTableCellClick({ rowIndex });
+            this.views['k1-tab'].handleTableCellClick({ rowIndex });
             return;
         }
 
         if (activeEditMode === 'K3') {
-            this.k3View.handleTableCellClick({ rowIndex, column });
+            this.views['k3-tab'].handleTableCellClick({ rowIndex, column });
             return;
         }
 
         if (dualChainMode) {
-            this.dualChainView.handleTableCellClick({ rowIndex, column });
+            this.views['k5-tab'].handleTableCellClick({ rowIndex, column });
             return;
         }
     }

@@ -12,7 +12,54 @@ export class DualChainView {
         this.stateService = stateService;
         this.calculationService = calculationService;
         this.eventAggregator = eventAggregator;
+
+        // Cache DOM elements
+        this.dualButton = document.getElementById('btn-k4-dual');
+        this.chainButton = document.getElementById('btn-k4-chain');
+        this.dualPriceDisplay = document.getElementById('k4-dual-price-display')?.querySelector('.price-value');
+        this.chainInput = document.getElementById('k4-input-display');
+
+        this.summaryWinderPriceDisplay = document.getElementById('k5-display-winder-summary');
+        this.summaryMotorPriceDisplay = document.getElementById('k5-display-motor-summary');
+        this.summaryRemotePriceDisplay = document.getElementById('k5-display-remote-summary');
+        this.summaryChargerPriceDisplay = document.getElementById('k5-display-charger-summary');
+        this.summaryCordPriceDisplay = document.getElementById('k5-display-cord-summary');
+        this.summaryAccessoriesTotalDisplay = document.getElementById('k5-display-accessories-total');
+
         console.log("DualChainView Initialized.");
+    }
+
+    /**
+     * [NEW] Renders the UI elements specific to the K5 view.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        const { dualChainMode, dualPrice, dualChainInputValue, summaryWinderPrice, summaryMotorPrice, summaryRemotePrice, summaryChargerPrice, summaryCordPrice, summaryAccessoriesTotal } = state.ui;
+
+        // Update mode button active states
+        if (this.dualButton) this.dualButton.classList.toggle('active', dualChainMode === 'dual');
+        if (this.chainButton) this.chainButton.classList.toggle('active', dualChainMode === 'chain');
+
+        // Update display boxes
+        const formatPrice = (price) => price ? `$${price.toFixed(2)}` : '';
+        if (this.dualPriceDisplay) this.dualPriceDisplay.textContent = formatPrice(dualPrice);
+
+        // Update chain input
+        if (this.chainInput) {
+            this.chainInput.disabled = dualChainMode !== 'chain';
+            this.chainInput.classList.toggle('active', dualChainMode === 'chain');
+            if (document.activeElement !== this.chainInput) {
+                this.chainInput.value = dualChainInputValue || '';
+            }
+        }
+
+        // Update summary display boxes
+        if (this.summaryWinderPriceDisplay) this.summaryWinderPriceDisplay.value = formatPrice(summaryWinderPrice);
+        if (this.summaryMotorPriceDisplay) this.summaryMotorPriceDisplay.value = formatPrice(summaryMotorPrice);
+        if (this.summaryRemotePriceDisplay) this.summaryRemotePriceDisplay.value = formatPrice(summaryRemotePrice);
+        if (this.summaryChargerPriceDisplay) this.summaryChargerPriceDisplay.value = formatPrice(summaryChargerPrice);
+        if (this.summaryCordPriceDisplay) this.summaryCordPriceDisplay.value = formatPrice(summaryCordPrice);
+        if (this.summaryAccessoriesTotalDisplay) this.summaryAccessoriesTotalDisplay.value = formatPrice(summaryAccessoriesTotal);
     }
 
     _getState() {
@@ -57,10 +104,6 @@ export class DualChainView {
         }
     }
 
-    /**
-     * [NEW] This method PURELY calculates the price and updates state. It contains NO validation logic.
-     * This is the key to achieving real-time updates without premature warnings.
-     */
     _calculateAndStoreDualPrice() {
         const items = this._getItems();
         const productType = this._getCurrentProductType();
@@ -73,10 +116,6 @@ export class DualChainView {
         this._updateSummaryAccessoriesTotal();
     }
 
-    /**
-     * [NEW] This method PURELY validates the selection. It does NOT calculate any price.
-     * It is only called when the user tries to exit the dual mode.
-     */
     _validateDualSelection() {
         const items = this._getItems();
         const selectedIndexes = items.reduce((acc, item, index) => {
@@ -109,9 +148,6 @@ export class DualChainView {
         return true;
     }
 
-    /**
-     * Handles the Enter key press in the chain input box.
-     */
     handleChainEnterPressed({ value }) {
         const { ui } = this._getState();
         const { targetCell: currentTarget } = ui;
@@ -133,9 +169,6 @@ export class DualChainView {
         this.stateService.dispatch(uiActions.clearDualChainInputValue());
     }
 
-    /**
-     * Handles clicks on table cells when a mode is active.
-     */
     handleTableCellClick({ rowIndex, column }) {
         const { ui } = this._getState();
         const { dualChainMode } = ui;
@@ -149,7 +182,6 @@ export class DualChainView {
         if (dualChainMode === 'dual' && column === 'dual') {
             const newValue = item.dual === 'D' ? '' : 'D';
             this.stateService.dispatch(quoteActions.updateItemProperty(rowIndex, 'dual', newValue));
-
             this._calculateAndStoreDualPrice();
         }
 
@@ -164,15 +196,13 @@ export class DualChainView {
         }
     }
 
-    /**
-     * [REVISED] This method is called by the main DetailConfigView when the K5 tab becomes active.
-     * It now correctly synchronizes all accessory prices from the K4 state.
-     */
     activate() {
         this.stateService.dispatch(uiActions.setVisibleColumns(['sequence', 'fabricTypeDisplay', 'location', 'dual', 'chain']));
 
         const { ui, quoteData } = this._getState();
         const currentProductData = quoteData.products[quoteData.currentProduct];
+
+        // Ensure all summary prices are correctly dispatched to the UI state
         this.stateService.dispatch(uiActions.setSummaryWinderPrice(ui.driveWinderTotalPrice));
         this.stateService.dispatch(uiActions.setSummaryMotorPrice(ui.driveMotorTotalPrice));
         this.stateService.dispatch(uiActions.setSummaryRemotePrice(ui.driveRemoteTotalPrice));
@@ -183,9 +213,6 @@ export class DualChainView {
         this._updateSummaryAccessoriesTotal();
     }
 
-    /**
-     * Calculates the total of all accessories displayed on the K5 summary tab.
-     */
     _updateSummaryAccessoriesTotal() {
         const { ui } = this._getState();
 

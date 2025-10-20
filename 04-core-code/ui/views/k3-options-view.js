@@ -6,10 +6,21 @@ import * as quoteActions from '../../actions/quote-actions.js';
  * @fileoverview A dedicated sub-view for handling all logic related to the K3 (Options) tab.
  */
 export class K3OptionsView {
-    constructor({ stateService, publishStateChangeCallback }) {
+    constructor({ stateService }) {
         this.stateService = stateService;
-        this.publish = publishStateChangeCallback;
+        this.editButton = document.getElementById('btn-k3-edit');
         console.log("K3OptionsView Initialized.");
+    }
+
+    /**
+     * [NEW] Renders the UI elements specific to the K3 view.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        if (!this.editButton) return;
+
+        const isK3EditMode = state.ui.activeEditMode === 'K3';
+        this.editButton.classList.toggle('active', isK3EditMode);
     }
 
     _getState() {
@@ -46,15 +57,15 @@ export class K3OptionsView {
         };
         const sequence = BATCH_CYCLE_SEQUENCES[column];
         if (!sequence) return;
-        
+
         const firstItemValue = items[0][column] || '';
         const currentIndex = sequence.indexOf(firstItemValue);
         const nextIndex = (currentIndex === -1) ? 0 : (currentIndex + 1) % sequence.length;
         const nextValue = sequence[nextIndex];
-        
+
         this.stateService.dispatch(quoteActions.batchUpdateProperty(column, nextValue));
     }
-    
+
     /**
      * Handles clicks on individual table cells in the K3 columns.
      * @param {object} data - The event data { rowIndex, column }.
@@ -62,7 +73,7 @@ export class K3OptionsView {
     handleTableCellClick({ rowIndex, column }) {
         this.stateService.dispatch(uiActions.setActiveCell(rowIndex, column));
         this.stateService.dispatch(quoteActions.cycleK3Property(rowIndex, column));
-        
+
         // Briefly highlight the cell by setting and then clearing the active cell state
         setTimeout(() => {
             this.stateService.dispatch(uiActions.setActiveCell(null, null));

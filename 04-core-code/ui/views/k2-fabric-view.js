@@ -8,14 +8,21 @@ import * as quoteActions from '../../actions/quote-actions.js';
  * @fileoverview A dedicated sub-view for handling all logic related to the K2 (Fabric) tab.
  */
 export class K2FabricView {
-    constructor({ stateService, eventAggregator, publishStateChangeCallback }) {
+    constructor({ stateService, eventAggregator }) {
         this.stateService = stateService;
         this.eventAggregator = eventAggregator;
-        this.publish = publishStateChangeCallback;
-        
+
         this.indexesToExcludeFromBatchUpdate = new Set();
 
         console.log("K2FabricView Initialized.");
+    }
+
+    /**
+     * [NEW] Renders the UI elements specific to the K2 view, like enabling/disabling inputs.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        this._updatePanelInputsState(state);
     }
 
     _getState() {
@@ -36,8 +43,8 @@ export class K2FabricView {
             const items = this._getItems();
             const { lfModifiedRowIndexes } = this._getState().quoteData.uiMetadata;
             const eligibleTypes = ['B2', 'B3', 'B4'];
-            
-            const hasConflict = items.some((item, index) => 
+
+            const hasConflict = items.some((item, index) =>
                 eligibleTypes.includes(item.fabricType) && lfModifiedRowIndexes.includes(index)
             );
 
@@ -47,21 +54,21 @@ export class K2FabricView {
                     closeOnOverlayClick: false,
                     layout: [
                         [
-                            { 
-                                type: 'button', text: 'Overwrite (L-Filter)', 
+                            {
+                                type: 'button', text: 'Overwrite (L-Filter)',
                                 callback: () => {
                                     this.indexesToExcludeFromBatchUpdate.clear();
                                     this._enterFCMode(true);
-                                } 
+                                }
                             },
-                            { 
-                                type: 'button', text: 'Keep Existing (Skip L-Filter)', 
+                            {
+                                type: 'button', text: 'Keep Existing (Skip L-Filter)',
                                 callback: () => {
                                     this.indexesToExcludeFromBatchUpdate = new Set(this._getState().quoteData.uiMetadata.lfModifiedRowIndexes);
                                     this._enterFCMode(false);
                                 }
                             },
-                            { type: 'button', text: 'Cancel', className: 'secondary', callback: () => {} }
+                            { type: 'button', text: 'Cancel', className: 'secondary', callback: () => { } }
                         ]
                     ]
                 });
@@ -89,7 +96,7 @@ export class K2FabricView {
             }
         }
         this.stateService.dispatch(uiActions.setActiveEditMode('K2'));
-        this._updatePanelInputsState(); 
+        // No need to call _updatePanelInputsState here; the state change will trigger a render.
         this.stateService.dispatch(uiActions.setActiveCell(null, null));
     }
 
@@ -123,7 +130,7 @@ export class K2FabricView {
 
         if (activeEditMode === 'K2_LF_SELECT' || activeEditMode === 'K2_LF_DELETE_SELECT') {
             const item = this._getItems()[rowIndex];
-            
+
             if (activeEditMode === 'K2_LF_DELETE_SELECT') {
                 const { lfModifiedRowIndexes } = this._getState().quoteData.uiMetadata;
                 if (!lfModifiedRowIndexes.includes(rowIndex)) {
@@ -138,9 +145,10 @@ export class K2FabricView {
                 return;
             }
             this.stateService.dispatch(uiActions.toggleLFSelection(rowIndex));
-            
+
             if (activeEditMode === 'K2_LF_SELECT') {
-                this._updatePanelInputsState();
+                // The render method will handle updating the input values.
+                // We just need to trigger the focus.
                 const { lfSelectedRowIndexes } = this._getState().ui;
                 if (lfSelectedRowIndexes.length > 0) {
                     setTimeout(() => {
@@ -157,7 +165,7 @@ export class K2FabricView {
 
     handleLFEditRequest() {
         const { activeEditMode } = this._getState().ui;
-        
+
         if (activeEditMode === 'K2_LF_SELECT') {
             this._applyLFChanges();
             this._exitAllK2Modes();
@@ -169,7 +177,7 @@ export class K2FabricView {
 
     handleLFDeleteRequest() {
         const { activeEditMode } = this._getState().ui;
-        
+
         if (activeEditMode === 'K2_LF_DELETE_SELECT') {
             const { lfSelectedRowIndexes } = this._getState().ui;
             if (lfSelectedRowIndexes.length > 0) {
@@ -188,10 +196,8 @@ export class K2FabricView {
         this.stateService.dispatch(uiActions.setActiveEditMode(null));
         this.stateService.dispatch(uiActions.clearMultiSelectSelection());
         this.stateService.dispatch(uiActions.clearLFSelection());
-        
-        this.indexesToExcludeFromBatchUpdate.clear();
 
-        this._updatePanelInputsState();
+        this.indexesToExcludeFromBatchUpdate.clear();
     }
 
     _applyLFChanges() {
@@ -200,7 +206,7 @@ export class K2FabricView {
 
         const fNameInput = document.querySelector('input[data-type="LF"][data-field="fabric"]');
         const fColorInput = document.querySelector('input[data-type="LF"][data-field="color"]');
-        
+
         if (fNameInput && fColorInput && fNameInput.value && fColorInput.value) {
             const fabricNameWithPrefix = `Light-filter ${fNameInput.value}`;
             this.stateService.dispatch(quoteActions.batchUpdateLFProperties(lfSelectedRowIndexes, fabricNameWithPrefix, fColorInput.value));
@@ -208,16 +214,14 @@ export class K2FabricView {
         }
     }
 
-    _updatePanelInputsState() {
-        const { ui, quoteData } = this._getState();
+    _updatePanelInputsState(state) {
+        const { ui, quoteData } = state;
         const { activeEditMode, lfSelectedRowIndexes } = ui;
-        const items = this._getItems();
-        const { lfModifiedRowIndexes } = quoteData.uiMetadata;
+        const items = quoteData.products[quoteData.currentProduct].items;
         const presentTypes = new Set(items.map(item => item.fabricType).filter(Boolean));
-        
-        const allPanelInputs = document.querySelectorAll('.panel-input');
-        let firstEnabledInput = null;
-        
+
+        const allPanelInputs = document.querySelectorAll('#k2-content .panel-input');
+
         if (activeEditMode === 'K2') {
             allPanelInputs.forEach(input => {
                 const type = input.dataset.type;
@@ -228,13 +232,12 @@ export class K2FabricView {
                     input.disabled = !isEnabled;
 
                     if (isEnabled) {
-                        if (!firstEnabledInput) {
-                            firstEnabledInput = input;
-                        }
-                        const itemWithData = items.find((item, index) => 
+                        const itemWithData = items.find((item, index) =>
                             item.fabricType === type && !this.indexesToExcludeFromBatchUpdate.has(index)
                         );
-                        input.value = itemWithData ? itemWithData[field] : '';
+                        if (document.activeElement !== input) {
+                            input.value = itemWithData ? itemWithData[field] : '';
+                        }
                     } else {
                         input.value = '';
                     }
@@ -242,13 +245,6 @@ export class K2FabricView {
                     input.disabled = true;
                 }
             });
-
-            if (firstEnabledInput) {
-                setTimeout(() => {
-                    firstEnabledInput.focus();
-                    firstEnabledInput.select();
-                }, 50);
-            }
         } else if (activeEditMode === 'K2_LF_SELECT') {
             allPanelInputs.forEach(input => {
                 const isLFRow = input.dataset.type === 'LF';
@@ -256,13 +252,15 @@ export class K2FabricView {
                 input.disabled = !(isLFRow && hasSelection);
             });
         } else {
-             allPanelInputs.forEach(input => {
+            allPanelInputs.forEach(input => {
                 input.disabled = true;
-                input.value = '';
+                if (document.activeElement !== input) {
+                    input.value = '';
+                }
             });
         }
     }
-    
+
     activate() {
         this.stateService.dispatch(uiActions.setVisibleColumns(['sequence', 'fabricTypeDisplay', 'fabric', 'color']));
     }

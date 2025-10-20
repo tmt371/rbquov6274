@@ -1,6 +1,6 @@
 // File: 04-core-code/ui/views/drive-accessories-view.js
 
-import { EVENTS } from '../../config/constants.js';
+import { EVENTS, DOM_IDS } from '../../config/constants.js';
 import * as uiActions from '../../actions/ui-actions.js';
 import * as quoteActions from '../../actions/quote-actions.js';
 
@@ -12,7 +12,66 @@ export class DriveAccessoriesView {
         this.stateService = stateService;
         this.calculationService = calculationService;
         this.eventAggregator = eventAggregator;
+
+        // Cache DOM elements
+        this.winderDisplay = document.getElementById('k5-display-winder');
+        this.motorDisplay = document.getElementById('k5-display-motor');
+        this.remoteDisplay = document.getElementById('k5-display-remote');
+        this.chargerDisplay = document.getElementById('k5-display-charger');
+        this.cordDisplay = document.getElementById('k5-display-cord');
+        this.totalDisplay = document.getElementById('k5-display-total');
+        this.remoteCountDisplay = document.getElementById('k5-display-remote-count');
+        this.chargerCountDisplay = document.getElementById('k5-display-charger-count');
+        this.cordCountDisplay = document.getElementById('k5-display-cord-count');
+        this.remoteAddBtn = document.getElementById('btn-k5-remote-add');
+        this.remoteSubtractBtn = document.getElementById('btn-k5-remote-subtract');
+        this.chargerAddBtn = document.getElementById('btn-k5-charger-add');
+        this.chargerSubtractBtn = document.getElementById('btn-k5-charger-subtract');
+        this.cordAddBtn = document.getElementById('btn-k5-cord-add');
+        this.cordSubtractBtn = document.getElementById('btn-k5-cord-subtract');
+
         console.log("DriveAccessoriesView Initialized.");
+    }
+
+    /**
+     * [NEW] Renders the UI elements specific to the K4 view.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        const { driveAccessoryMode, driveWinderTotalPrice, driveMotorTotalPrice, driveRemoteTotalPrice, driveChargerTotalPrice, driveCordTotalPrice, driveGrandTotal, driveRemoteCount, driveChargerCount, driveCordCount } = state.ui;
+
+        // Update mode button active states
+        document.getElementById('btn-k5-winder')?.classList.toggle('active', driveAccessoryMode === 'winder');
+        document.getElementById('btn-k5-motor')?.classList.toggle('active', driveAccessoryMode === 'motor');
+        document.getElementById('btn-k5-remote')?.classList.toggle('active', driveAccessoryMode === 'remote');
+        document.getElementById('btn-k5-charger')?.classList.toggle('active', driveAccessoryMode === 'charger');
+        document.getElementById('btn-k5-3m-cord')?.classList.toggle('active', driveAccessoryMode === 'cord');
+
+        // Update display boxes
+        const formatPrice = (price) => price ? `$${price.toFixed(2)}` : '';
+        if (this.winderDisplay) this.winderDisplay.value = formatPrice(driveWinderTotalPrice);
+        if (this.motorDisplay) this.motorDisplay.value = formatPrice(driveMotorTotalPrice);
+        if (this.remoteDisplay) this.remoteDisplay.value = formatPrice(driveRemoteTotalPrice);
+        if (this.chargerDisplay) this.chargerDisplay.value = formatPrice(driveChargerTotalPrice);
+        if (this.cordDisplay) this.cordDisplay.value = formatPrice(driveCordTotalPrice);
+        if (this.totalDisplay) this.totalDisplay.value = formatPrice(driveGrandTotal);
+
+        // Update counters
+        if (this.remoteCountDisplay) this.remoteCountDisplay.value = driveRemoteCount || 0;
+        if (this.chargerCountDisplay) this.chargerCountDisplay.value = driveChargerCount || 0;
+        if (this.cordCountDisplay) this.cordCountDisplay.value = driveCordCount || 0;
+
+        // Update counter button disabled states
+        const isRemoteMode = driveAccessoryMode === 'remote';
+        const isChargerMode = driveAccessoryMode === 'charger';
+        const isCordMode = driveAccessoryMode === 'cord';
+
+        if (this.remoteAddBtn) this.remoteAddBtn.disabled = !isRemoteMode;
+        if (this.remoteSubtractBtn) this.remoteSubtractBtn.disabled = !isRemoteMode;
+        if (this.chargerAddBtn) this.chargerAddBtn.disabled = !isChargerMode;
+        if (this.chargerSubtractBtn) this.chargerSubtractBtn.disabled = !isChargerMode;
+        if (this.cordAddBtn) this.cordAddBtn.disabled = !isCordMode;
+        if (this.cordSubtractBtn) this.cordSubtractBtn.disabled = !isCordMode;
     }
 
     _getState() {

@@ -1,14 +1,15 @@
 // File: 04-core-code/ui/views/k1-location-view.js
 import * as uiActions from '../../actions/ui-actions.js';
 import * as quoteActions from '../../actions/quote-actions.js';
+import { DOM_IDS } from '../../config/constants.js';
 
 /**
  * @fileoverview A dedicated sub-view for handling all logic related to the K1 (Location) tab.
  */
 export class K1LocationView {
-    constructor({ stateService, publishStateChangeCallback }) {
+    constructor({ stateService }) {
         this.stateService = stateService;
-        this.publish = publishStateChangeCallback;
+        this.locationInput = document.getElementById(DOM_IDS.LOCATION_INPUT_BOX);
         console.log("K1LocationView Initialized.");
     }
 
@@ -16,6 +17,28 @@ export class K1LocationView {
         const { quoteData } = this.stateService.getState();
         return quoteData.products[quoteData.currentProduct].items;
     }
+
+    /**
+     * [NEW] Renders the UI elements specific to the K1 view.
+     * @param {object} state The full application state.
+     */
+    render(state) {
+        if (!this.locationInput) return;
+
+        const { activeEditMode, targetCell, locationInputValue } = state.ui;
+
+        const isK1EditMode = activeEditMode === 'K1';
+        this.locationInput.disabled = !isK1EditMode;
+
+        if (isK1EditMode && document.activeElement !== this.locationInput) {
+            this.locationInput.value = locationInputValue || '';
+        }
+
+        this.locationInput.classList.toggle('active', isK1EditMode);
+
+        // This function doesn't need to return anything. It modifies the DOM directly.
+    }
+
 
     /**
      * Handles the request to enter or exit the location editing mode.
@@ -39,14 +62,13 @@ export class K1LocationView {
         if (newMode) {
             const targetRow = 0;
             this.stateService.dispatch(uiActions.setTargetCell({ rowIndex: targetRow, column: 'location' }));
-            
+
             const currentItem = this._getItems()[targetRow];
             this.stateService.dispatch(uiActions.setLocationInputValue(currentItem.location || ''));
-            
-            const locationInput = document.getElementById('location-input-box');
+
             setTimeout(() => {
-                locationInput?.focus();
-                locationInput?.select();
+                this.locationInput?.focus();
+                this.locationInput?.select();
             }, 50);
         } else {
             this.stateService.dispatch(uiActions.setTargetCell(null));
@@ -67,16 +89,15 @@ export class K1LocationView {
 
         const nextRowIndex = targetCell.rowIndex + 1;
         const totalRows = this._getItems().length;
-        const locationInput = document.getElementById('location-input-box');
 
         // Move to the next row if it's not the last empty row
         if (nextRowIndex < totalRows - 1) {
             this.stateService.dispatch(uiActions.setTargetCell({ rowIndex: nextRowIndex, column: 'location' }));
             const nextItem = this._getItems()[nextRowIndex];
             this.stateService.dispatch(uiActions.setLocationInputValue(nextItem.location || ''));
-            
+
             // Refocus and select the input for continuous entry
-            setTimeout(() => locationInput?.select(), 0);
+            setTimeout(() => this.locationInput?.select(), 0);
         } else {
             // If it's the last row, exit the editing mode
             this._toggleLocationEditMode(null);
@@ -92,11 +113,10 @@ export class K1LocationView {
         this.stateService.dispatch(uiActions.setTargetCell({ rowIndex, column: 'location' }));
         const item = this._getItems()[rowIndex];
         this.stateService.dispatch(uiActions.setLocationInputValue(item.location || ''));
-        
-        const locationInput = document.getElementById('location-input-box');
+
         setTimeout(() => {
-            locationInput?.focus();
-            locationInput?.select();
+            this.locationInput?.focus();
+            this.locationInput?.select();
         }, 50);
     }
 
