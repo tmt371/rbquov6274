@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation - {{quoteId}}</title>
+</head>
+
+<body>
+
+    <div class="quotation-container">
+        <div class="quotation-inner-wrapper">
+
+            <header class="header">
+                <div class="quotation-meta">
+                    <h2>QUOTATION</h2>
+                    <p><strong>Quote No:</strong> {{quoteId}}</p>
+                    <p><strong>Issue Date:</strong> {{issueDate}}</p>
+                    <p><strong>Due Date:</strong> {{dueDate}}</p>
+                </div>
+                <div class="company-details">
+                    <h1>EZ Blinds & Shutters</h1>
+                    <p class="abn-line">ABN: 52 62 74 20 777</p>
+                    <p>U11 / 271 Wells Rd, Chelsea Heights<span class="icon">📍</span></p>
+                    <p>
+                        <span>0466 965 168<span class="icon">📞</span></span>
+                        <span style="margin: 0 10px;">|</span>
+                        <span>ezblinds@ezbns.com.au<span class="icon">📧</span></span>
+                    </p>
+                    <p>www.ezbns.com.au<span class="icon">🌐</span></p>
+                </div>
+            </header>
+
+            <main>
+                <section class="customer-info">
+                    <p>{{{customerInfoHtml}}}</p>
+                </section>
+
+                <section class="items-section">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Description</th>
+                                <th class="align-right">QTY</th>
+                                <th class="align-right">Price</th>
+                                <th class="align-right">Discounted Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{{summaryItemsTableBody}}}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="summary-section">
+                    {{{summaryTotalsTable}}}
+                </section>
+
+                <div class="pmd-cta-wrapper">
+                    <section class="payment-info">
+                        <h4>Payment Method</h4>
+                        <p><strong>Bank:</strong> CBA</p>
+                        <p><strong>BSB:</strong> 062 692</p>
+                        <p><strong>Account:</strong> 4570 8877</p>
+                        <p><strong>Acc Name:</strong> Alphalead Pty Ltd</p>
+                        <hr style="border:0; border-top:1px dashed #ccc; margin: 10px 0;">
+                        <p><strong>PayID:</strong> 627 420 777</p>
+                        <p style="font-size: 12px; margin-top: 10px;"><em>Please leave your Ph. number as Ref. in the
+                                transaction.</em></p>
+                    </section>
+
+                    <section class="call-to-action">
+                        <h4>How to Proceed</h4>
+                        <p>To accept this quotation, please reply to this email confirming your acceptance. We will then
+                            issue a formal invoice for the deposit payment.</p>
+                    </section>
+                </div>
+
+                <section class="terms">
+                    <h4>Terms & Conditions</h4>
+                    {{{termsAndConditions}}}
+                </section>
+
+            </main>
+
+            <footer class="footer">
+                <p>Thank you for your business!</p>
+                <p><strong>EZ Blinds & Shutters</strong></p>
+            </footer>
+
+        </div>
+    </div>
+
+    {{{appendixHtml}}}
+
+</body>
+
+</html>
