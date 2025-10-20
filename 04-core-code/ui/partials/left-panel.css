@@ -11,7 +11,10 @@
 }
 #left-panel {
     position: fixed;
+    top: 0; /* [NEW] Ensure it's aligned to the top */
     left: 0;
+    width: 290px; /* [FIX] Added width to make the panel visible */
+    height: 100%; /* [NEW] Ensure it takes the full height */
     background-color: var(--k1-bg-color);
     border: 1px solid var(--panel-border-color);
     border-left: none;
@@ -24,7 +27,6 @@
     padding: 0;
     transform: translateX(-100%);
 }
-/* [FIX] Changed class name from is-expanded to is-open to match JS logic */
 #left-panel.is-open {
     transform: translateX(0);
 }
@@ -50,8 +52,6 @@
     transition: transform 0.3s ease-in-out;
 }
 
-/* [REMOVED] The rule that moved the handle to the right has been deleted to meet the new requirement. */
-
 #left-panel-toggle .toggle-arrow {
     width: 20px;
     height: 20px;
@@ -67,7 +67,7 @@
     opacity: 0; /* Hidden by default */
 }
 
-/* [FIX] When panel is open, flip the arrow's visibility */
+/* When panel is open, flip the arrow's visibility */
 #left-panel.is-open ~ #left-panel-toggle .arrow-right {
     opacity: 0;
 }
