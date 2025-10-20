@@ -31,44 +31,38 @@ export class UIManager {
         this.summaryComponent = new SummaryComponent(
             document.getElementById(DOM_IDS.TOTAL_SUM_VALUE)
         );
-        // [MODIFIED] Assign the received instance directly
         this.leftPanelComponent = leftPanelComponent;
         this.rightPanelComponent = rightPanelComponent;
 
-        // [FIX] Correctly instantiate PanelComponent for the numeric keyboard
         this.numericKeyboardPanel = new PanelComponent({
             panelElement: document.getElementById(DOM_IDS.NUMERIC_KEYBOARD_PANEL),
             toggleElement: document.getElementById(DOM_IDS.PANEL_TOGGLE),
-            eventAggregator: this.eventAggregator,
-            expandedClass: 'is-collapsed', // This class is toggled to show/hide
+            eventAggregator: this.eventAggregator, // Pass aggregator
+            expandedClass: 'is-collapsed',
+            retractEventName: EVENTS.OPERATION_SUCCESSFUL_AUTO_HIDE_PANEL // Use a retract event
         });
 
         this.notificationComponent = new NotificationComponent({
             containerElement: document.getElementById(DOM_IDS.TOAST_CONTAINER),
             eventAggregator,
         });
-        this.dialogComponent = new DialogComponent(
-            document.getElementById(DOM_IDS.CONFIRMATION_DIALOG_OVERLAY),
-            eventAggregator
-        );
-        this.quotePreviewComponent = quotePreviewComponent;
 
-        // [REMOVED] Subscription is no longer needed as PanelComponent handles its own toggle.
+        // [FIX] Correctly instantiate DialogComponent by passing a configuration object
+        this.dialogComponent = new DialogComponent({
+            overlayElement: document.getElementById(DOM_IDS.CONFIRMATION_DIALOG_OVERLAY),
+            eventAggregator: eventAggregator
+        });
+
+        this.quotePreviewComponent = quotePreviewComponent;
     }
 
     render(state) {
-        // Delegate rendering to child components
         this.tableComponent.render(state);
 
-        // [MODIFIED] Pass only the necessary state parts to child components
         const currentProductData = state.quoteData.products[state.quoteData.currentProduct];
         this.summaryComponent.render(currentProductData.summary, state.ui.isSumOutdated);
 
         this.leftPanelComponent.render(state);
         this.rightPanelComponent.render(state);
-
-        // [REMOVED] PanelComponent does not have a render method. It manages its own visibility.
     }
-
-    // [REMOVED] This method is no longer needed as PanelComponent is self-managed.
 }
