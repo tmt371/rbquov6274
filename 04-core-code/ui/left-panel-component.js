@@ -24,20 +24,17 @@ export class LeftPanelComponent {
         this.tabContents = this.panelElement.querySelectorAll('.tab-content');
         this.backButton = this.panelElement.querySelector('#back-to-grid-view');
 
-        // --- Child Component Initialization ---
-        // [MODIFIED] The input handler is now initialized in main.js, this reference is no longer needed here.
-
         this._initializeEventListeners();
         console.log("LeftPanelComponent Initialized.");
     }
 
     _initializeEventListeners() {
-        // [REMOVED] The toggle button is now handled by the InputHandler to centralize all user inputs.
-        // The back button and tab clicks are also handled there.
-        // This component is now purely for rendering and state management.
+        // Event listeners are now centralized in the main InputHandler
     }
 
     toggle() {
+        // [TRACK] Check if the toggle method is being called
+        console.log('[TRACK] LeftPanelComponent: toggle() method called.');
         this.panelElement.classList.toggle('is-open');
     }
 
@@ -58,12 +55,10 @@ export class LeftPanelComponent {
             this.hide();
         }
 
-        // [FIX] Correctly update tab active states based on activeTabId from the state
         this.tabs.forEach(tab => {
             tab.classList.toggle('active', tab.id === activeTabId);
         });
 
-        // [FIX] Check if detailConfigView and its render method exist before calling
         if (this.detailConfigView && typeof this.detailConfigView.render === 'function') {
             this.detailConfigView.render(state);
         }

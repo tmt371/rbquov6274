@@ -19,7 +19,7 @@ export class InputHandler {
         this._setupPanelToggles(); // [MODIFIED] Consolidated panel toggle logic here
         this._setupFileLoader();
         this._setupPhysicalKeyboard();
-
+        
         // The left panel's internal listeners are still initialized here
         this.leftPanelHandler.initialize();
     }
@@ -29,7 +29,7 @@ export class InputHandler {
             if (event.target.matches('input:not([readonly])')) {
                 return;
             }
-
+            
             let keyToPublish = null;
             let eventToPublish = EVENTS.NUMERIC_KEY_PRESSED;
             const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
@@ -41,7 +41,7 @@ export class InputHandler {
             }
             if (event.key >= '0' && event.key <= '9') {
                 keyToPublish = event.key;
-            }
+            } 
             else {
                 switch (event.key.toLowerCase()) {
                     case 'w': keyToPublish = 'W'; break;
@@ -85,7 +85,7 @@ export class InputHandler {
             }
         });
     }
-
+    
     /**
      * [NEW] Centralized method to handle all panel toggle buttons.
      */
@@ -102,6 +102,8 @@ export class InputHandler {
         const leftPanelToggle = document.getElementById(DOM_IDS.LEFT_PANEL_TOGGLE);
         if (leftPanelToggle) {
             leftPanelToggle.addEventListener('click', () => {
+                // [TRACK] Check if the click event is being captured
+                console.log('[TRACK] InputHandler: Left panel toggle clicked.');
                 this.eventAggregator.publish(EVENTS.USER_TOGGLED_LEFT_PANEL);
             });
         }
@@ -127,7 +129,7 @@ export class InputHandler {
         setupButton('key-reset', EVENTS.USER_REQUESTED_RESET);
         setupButton(DOM_IDS.KEY_M_SET, EVENTS.USER_REQUESTED_MULTI_TYPE_SET);
     }
-
+    
     _setupNumericKeyboard() {
         const keyboard = document.getElementById(DOM_IDS.NUMERIC_KEYBOARD);
         if (!keyboard) return;
@@ -155,10 +157,10 @@ export class InputHandler {
             button.addEventListener('mouseleave', () => clearTimeout(this.longPressTimer));
             button.addEventListener('touchend', endPress);
         };
-
+        
         const addButtonListener = (id, eventName, data = {}) => {
             const button = document.getElementById(id);
-            if (button) {
+            if(button) {
                 if (id === 'key-type') {
                     addLongPressSupport(button, EVENTS.TYPE_BUTTON_LONG_PRESSED, EVENTS.USER_REQUESTED_CYCLE_TYPE, data);
                 } else {
@@ -180,7 +182,7 @@ export class InputHandler {
         addButtonListener('key-2', EVENTS.NUMERIC_KEY_PRESSED, { key: '2' });
         addButtonListener('key-3', EVENTS.NUMERIC_KEY_PRESSED, { key: '3' });
         addButtonListener('key-0', EVENTS.NUMERIC_KEY_PRESSED, { key: '0' });
-
+        
         // Function keys within the grid
         addButtonListener('key-w', EVENTS.NUMERIC_KEY_PRESSED, { key: 'W' });
         addButtonListener('key-h', EVENTS.NUMERIC_KEY_PRESSED, { key: 'H' });
@@ -207,7 +209,7 @@ export class InputHandler {
                     }, this.pressThreshold);
                 }
             };
-
+            
             const endPress = (e) => {
                 clearTimeout(this.longPressTimer);
 
@@ -231,9 +233,9 @@ export class InputHandler {
 
             table.addEventListener('mousedown', startPress);
             table.addEventListener('touchstart', startPress, { passive: false });
-
+            
             table.addEventListener('mouseup', endPress);
-
+            
             table.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 endPress(e);
