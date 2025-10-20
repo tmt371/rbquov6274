@@ -18,7 +18,7 @@ export class UIManager {
         calculationService,
         rightPanelComponent,
         quotePreviewComponent,
-        leftPanelComponent // [MODIFIED] Receive an already instantiated component
+        leftPanelComponent, // [MODIFIED] Receive an already instantiated component
     }) {
         this.appElement = appElement;
         this.eventAggregator = eventAggregator;
@@ -26,8 +26,7 @@ export class UIManager {
 
         // --- Child Component Management ---
         this.tableComponent = new TableComponent(
-            document.getElementById(DOM_IDS.RESULTS_TABLE),
-            eventAggregator
+            document.getElementById(DOM_IDS.RESULTS_TABLE)
         );
         this.summaryComponent = new SummaryComponent(
             document.getElementById(DOM_IDS.TOTAL_SUM_VALUE)
@@ -35,42 +34,41 @@ export class UIManager {
         // [MODIFIED] Assign the received instance directly
         this.leftPanelComponent = leftPanelComponent;
         this.rightPanelComponent = rightPanelComponent;
-        this.numericKeyboardPanel = new PanelComponent(
-            document.getElementById(DOM_IDS.NUMERIC_KEYBOARD_PANEL)
-        );
-        this.notificationComponent = new NotificationComponent(
-            document.getElementById(DOM_IDS.TOAST_CONTAINER),
-            eventAggregator
-        );
+
+        // [FIX] Correctly instantiate PanelComponent for the numeric keyboard
+        this.numericKeyboardPanel = new PanelComponent({
+            panelElement: document.getElementById(DOM_IDS.NUMERIC_KEYBOARD_PANEL),
+            toggleElement: document.getElementById(DOM_IDS.PANEL_TOGGLE),
+            eventAggregator: this.eventAggregator,
+            expandedClass: 'is-collapsed', // This class is toggled to show/hide
+        });
+
+        this.notificationComponent = new NotificationComponent({
+            containerElement: document.getElementById(DOM_IDS.TOAST_CONTAINER),
+            eventAggregator,
+        });
         this.dialogComponent = new DialogComponent(
             document.getElementById(DOM_IDS.CONFIRMATION_DIALOG_OVERLAY),
             eventAggregator
         );
         this.quotePreviewComponent = quotePreviewComponent;
 
-        // --- Event Subscriptions ---
-        this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_NUMERIC_KEYBOARD, (isVisible) =>
-            this.toggleNumericKeyboard(isVisible)
-        );
+        // [REMOVED] Subscription is no longer needed as PanelComponent handles its own toggle.
     }
 
     render(state) {
         // Delegate rendering to child components
         this.tableComponent.render(state);
-        this.summaryComponent.render(state, this.calculationService);
+
+        // [MODIFIED] Pass only the necessary state parts to child components
+        const currentProductData = state.quoteData.products[state.quoteData.currentProduct];
+        this.summaryComponent.render(currentProductData.summary, state.ui.isSumOutdated);
+
         this.leftPanelComponent.render(state);
         this.rightPanelComponent.render(state);
 
-        this.numericKeyboardPanel.render(state.ui.isNumericKeyboardVisible);
+        // [REMOVED] PanelComponent does not have a render method. It manages its own visibility.
     }
 
-    toggleNumericKeyboard(isVisible) {
-        const panelToggle = document.getElementById(DOM_IDS.PANEL_TOGGLE);
-        this.numericKeyboardPanel.toggle(isVisible);
-        if (isVisible) {
-            panelToggle.classList.add('is-active');
-        } else {
-            panelToggle.classList.remove('is-active');
-        }
-    }
+    // [REMOVED] This method is no longer needed as PanelComponent is self-managed.
 }
