@@ -52,6 +52,8 @@ export const EVENTS = {
 
     // --- User Actions: Panels & Navigation ---
     USER_TOGGLED_NUMERIC_KEYBOARD: 'userToggledNumericKeyboard',
+    USER_TOGGLED_LEFT_PANEL: 'userToggledLeftPanel', // [NEW]
+    USER_TOGGLED_RIGHT_PANEL: 'userToggledRightPanel', // [NEW]
     USER_NAVIGATED_TO_DETAIL_VIEW: 'userNavigatedToDetailView',
     USER_NAVIGATED_TO_QUICK_QUOTE_VIEW: 'userNavigatedToQuickQuoteView',
     USER_SWITCHED_TAB: 'userSwitchedTab',

@@ -18,7 +18,7 @@ export class UIManager {
         calculationService,
         rightPanelComponent,
         quotePreviewComponent,
-        leftPanelComponent, // [MODIFIED] Receive an already instantiated component
+        leftPanelComponent,
     }) {
         this.appElement = appElement;
         this.eventAggregator = eventAggregator;
@@ -34,12 +34,14 @@ export class UIManager {
         this.leftPanelComponent = leftPanelComponent;
         this.rightPanelComponent = rightPanelComponent;
 
+        // [MODIFIED] The numeric keyboard panel is now also a self-managed PanelComponent.
         this.numericKeyboardPanel = new PanelComponent({
             panelElement: document.getElementById(DOM_IDS.NUMERIC_KEYBOARD_PANEL),
             toggleElement: document.getElementById(DOM_IDS.PANEL_TOGGLE),
-            eventAggregator: this.eventAggregator, // Pass aggregator
+            eventAggregator: this.eventAggregator,
             expandedClass: 'is-collapsed',
-            retractEventName: EVENTS.OPERATION_SUCCESSFUL_AUTO_HIDE_PANEL // Use a retract event
+            // This event will be published by other components (e.g., InputHandler) on certain actions.
+            retractEventName: EVENTS.OPERATION_SUCCESSFUL_AUTO_HIDE_PANEL
         });
 
         this.notificationComponent = new NotificationComponent({
@@ -47,21 +49,29 @@ export class UIManager {
             eventAggregator,
         });
 
-        // [FIX] Correctly instantiate DialogComponent by passing a configuration object
         this.dialogComponent = new DialogComponent({
             overlayElement: document.getElementById(DOM_IDS.CONFIRMATION_DIALOG_OVERLAY),
             eventAggregator: eventAggregator
         });
 
         this.quotePreviewComponent = quotePreviewComponent;
+
+        // --- [NEW] Centralized event subscriptions for panel toggling ---
+        this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_LEFT_PANEL, () => this.leftPanelComponent.toggle());
+        this.eventAggregator.subscribe(EVENTS.USER_TOGGLED_RIGHT_PANEL, () => this.rightPanelComponent.toggle());
+
+        // Note: Numeric keyboard toggle is handled internally by its PanelComponent instance.
     }
 
     render(state) {
+        // Delegate rendering to child components
         this.tableComponent.render(state);
 
         const currentProductData = state.quoteData.products[state.quoteData.currentProduct];
         this.summaryComponent.render(currentProductData.summary, state.ui.isSumOutdated);
 
+        // Left and Right panels now only need to be rendered when their state changes,
+        // which is handled via their own render calls triggered by the state update.
         this.leftPanelComponent.render(state);
         this.rightPanelComponent.render(state);
     }

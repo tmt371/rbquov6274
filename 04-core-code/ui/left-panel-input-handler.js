@@ -12,7 +12,7 @@ export class LeftPanelInputHandler {
     }
 
     initialize() {
-        this._setupNavigationToggle();
+        // [REMOVED] The navigation toggle is now handled by the main InputHandler.
         this._setupTabButtons();
         this._setupK1Inputs();
         this._setupK2Inputs();
@@ -21,14 +21,7 @@ export class LeftPanelInputHandler {
         this._setupK5Inputs();
     }
 
-    _setupNavigationToggle() {
-        const leftPanelToggle = document.getElementById(DOM_IDS.LEFT_PANEL_TOGGLE);
-        if (leftPanelToggle) {
-            leftPanelToggle.addEventListener('click', () => {
-                this.eventAggregator.publish(EVENTS.USER_NAVIGATED_TO_DETAIL_VIEW);
-            });
-        }
-    }
+    // [REMOVED] _setupNavigationToggle method is deleted.
 
     _setupTabButtons() {
         const tabContainer = document.querySelector('#left-panel .tab-container');
@@ -158,8 +151,6 @@ export class LeftPanelInputHandler {
         const setupK5ModeButton = (buttonId, mode) => {
             const button = document.getElementById(buttonId);
             if (button) {
-                // [REFACTOR] Removed special handling for the remote button.
-                // It now fires a standard 'driveModeChanged' event, same as other accessory buttons.
                 button.addEventListener('click', () => {
                     this.eventAggregator.publish(EVENTS.DRIVE_MODE_CHANGED, { mode });
                 });

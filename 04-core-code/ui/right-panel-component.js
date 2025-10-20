@@ -44,6 +44,13 @@ export class RightPanelComponent {
         }
     }
 
+    /**
+     * [NEW] Adds or removes the 'is-expanded' class to show or hide the panel.
+     */
+    toggle() {
+        this.panelElement.classList.toggle('is-expanded');
+    }
+
     render(state) {
         this.state = state; // Cache the latest state
 
@@ -53,7 +60,6 @@ export class RightPanelComponent {
         }
     }
 
-    // [MODIFIED] Method is now public to allow external control (e.g., from UIManager).
     setActiveTab(tabId) {
         const targetContentId = document.getElementById(tabId)?.dataset.tabTarget;
         if (!targetContentId) return;
@@ -67,7 +73,6 @@ export class RightPanelComponent {
         });
 
         this.activeView = this.views[tabId];
-
         // Call the activate method on the new active view, if it exists.
         // This is useful for one-time actions when a tab is selected.
         if (this.activeView && typeof this.activeView.activate === 'function') {
